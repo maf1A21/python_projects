@@ -64,6 +64,23 @@ def inverse_matrix(A):
     return np.array(Inv).transpose()
 
 
+# Число обусловленности матрицы
+def cond_number(A):
+    A = np.array(A)
+    A_inv = inverse_matrix(A)
+
+    A_norm = -1
+    for i in range(A.shape[0]):
+        A_norm = max(abs(A[:, i]).sum(), A_norm) # 1 - норма
+
+    A_inv_norm = -1
+    for i in range(A_inv.shape[0]):
+        A_inv_norm = max(abs(A_inv[:, i]).sum(), A_inv_norm) # 1 - норма
+
+    cond = A_norm * A_inv_norm
+    return cond if cond >= 1 else 'Wrong condition number'
+
+
 # проверка решения СЛАУ
 def test_solve_lu():
     error = 1e-9
@@ -76,7 +93,7 @@ def test_solve_lu():
     b1 = np.dot(A1, x1_expected)
     x1_computed = solve_lu(A1, b1)
     statement = np.linalg.norm(x1_computed - x1_expected) < error
-    print('\n\033[1;32;40m Test 1 is passed 👍👍👍 \n' if statement
+    print('\033[1;32;40m Test 1 is passed 👍👍👍 \n' if statement
           else f'\033[1;32;40m Test 1 is not passed ❌❌❌\nx_expected:\n{x1_expected}\nx_computed:\n{x1_computed}\n\n')
 
     # Test 2
@@ -153,8 +170,8 @@ def test_determinant_in_lu():
     error = 1e-4
     statement = np.abs(abs(determinant_in_lu(LU)) - abs(np.linalg.det(A))) < error
 
-    print('\n\033[1;32;40m det(LU) is equal to det(A) 👍👍👍 \n' if statement
-          else f'\033[1;32;40m LU is not equal to PA ❌❌❌\ndet(LU):\n{determinant_in_lu(LU)}\ndet(A):\n{np.linalg.det(A)}\n\n')
+    print('\033[1;32;40m det(LU) is equal to det(A) 👍👍👍 \n' if statement
+          else f'\033[1;32;40m LU is not equal to PA ❌❌❌\ndet(LU):\n{determinant_in_lu(LU)}\ndet(A):\n{np.linalg.det(A)}\n')
 
 
 # проверка вычисления обратной матрицы
@@ -172,7 +189,24 @@ def test_inverse_matrix():
           else f'\033[1;32;40m Inversion failed ❌❌❌\nA * A_inversed:\n{np.dot(A, A_inversed)}\n')
 
 
+# проверка числа обусловленности
+def test_cond_number():
+    error = 1e-9
+    n = np.random.randint(2, 10)
+    A = np.random.uniform(low=-10.5, high=23.1, size=(n, n))
+    A_inversed = inverse_matrix(A)
+
+    constant1 = np.random.uniform(1e-8, 101)
+    constant2 = np.random.uniform(-101, -1e-8)
+
+    # ν(c1 * A) = v(c2 * A_inversed)
+    statement = cond_number(constant1 * A) - cond_number(constant2 * A_inversed) < error
+    print('\033[1;32;40m Condition number found correclty 👍👍👍 \n' if statement
+          else f'\033[1;32;40m Wrong condition number failed ❌❌❌\nA * A_inversed:\n{np.dot(A, A_inversed)}\n')
+
+
 test_lu_decomposition()
 test_determinant_in_lu()
 test_solve_lu()
 test_inverse_matrix()
+test_cond_number()
